@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common'
+import { Controller, Get, Param, Post } from '@nestjs/common'
 import { User } from '@prisma/client'
 import { AppService } from './app.service'
 
@@ -8,11 +8,15 @@ export class AppController {
 
 	@Get()
 	async getHello(): Promise<User[]> {
-		return this.appService.getHello()
+		return this.appService.getUsers()
+	}
+	@Get('/users/:id')
+	async getOne(@Param('id') id: string): Promise<User> {
+		return this.appService.getOne(id)
 	}
 
 	@Post()
 	async create(): Promise<User> {
-		return this.appService.create()
+		return this.appService.createUser()
 	}
 }

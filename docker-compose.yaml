@@ -1,15 +1,16 @@
 services:
   backend:
+    container_name: backend-test
     build:
       context: ./backend
-      dockerfile: Dockerfile
+    env_file:
+      - path: ./backend/.env.production
     ports:
       - 4200:4200
-    env_file:
-      - ./backend/.env.production
     depends_on:
       - database
-
+    networks:
+      - test-network
   database:
     image: postgres:alpine
     ports:
@@ -18,7 +19,8 @@ services:
       - ./backend/.env.production
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    networks:
+      - test-network
   frontend:
     # image: ${FRONTEND_IMAGE}
     build:
@@ -26,13 +28,15 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - '3000:3000'
-
     volumes:
       - frontend-node-modules:/app/node_modules
-      - frontend-build:/app/.next
     restart: always
+    env_file:
+      - ./frontend/.env.production
     depends_on:
       - backend
+    networks:
+      - test-network
   nginx:
     build:
       context: ./.nginx/
@@ -45,8 +49,12 @@ services:
       - ./.nginx/letsencrypt/:/etc/letsencrypt/
     depends_on:
       - frontend
-
+      - backend
+    networks:
+      - test-network
+networks:
+  test-network:
+    driver: bridge
 volumes:
   postgres_data:
-  frontend-build:
   frontend-node-modules:
